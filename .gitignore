@@ -1,0 +1,13 @@
+.*.sw?
+# ignore the binary
+/toolbag/toolbag
+# ignore built images
+/tools/share/notfound-img
+# ignore latex stuff
+*.log
+*.aux
+*.dvi
+*.png
+*.base64
+# ignore the tarball built for data
+*.tar.xz

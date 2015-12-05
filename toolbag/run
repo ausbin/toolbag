@@ -1,0 +1,16 @@
+#!/bin/bash
+# just an ugly example invocation for convenience. see the service file
+# in systemd/ for what i use in production
+# (its dependency management is much nicer than what you see here)
+
+# assume that someone has already go-get'd execd and built it
+pushd ../../execd/execd/ >/dev/null
+    PATH=./figlet:$PATH ./execd -timedlog -listen 127.0.0.1:4000 &
+    pid=$!
+popd >/dev/null
+
+./toolbag -http -tcp :8030 \
+          -figlet:template share/templates/figlet.html -figlet:tcp 127.0.0.1:4000 \
+          -notfound:template share/templates/notfound.html -notfound:dir share/notfound-img
+
+kill $pid

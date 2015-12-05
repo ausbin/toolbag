@@ -1,0 +1,13 @@
+[Unit]
+Description=toolbag
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/usr/local/share/toolbag
+ExecStart=/usr/local/bin/toolbag -fcgi -unix /run/toolbag/sock \
+                                 -figlet:template templates/figlet.html -figlet:tcp execd:4000 \
+                                 -notfound:template templates/notfound.html -notfound:dir notfound-img
+
+[Install]
+WantedBy=multi-user.target
