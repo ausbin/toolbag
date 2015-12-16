@@ -5,9 +5,13 @@ Description=toolbag
 Type=simple
 User=www-data
 WorkingDirectory=/usr/local/share/toolbag
+# hack to remove the old socket, which implementation of toolbag doesn't
+# currently delete
+ExecStartPre=/bin/rm -vf /run/toolbag/sock
 ExecStart=/usr/local/bin/toolbag -fcgi -unix /run/toolbag/sock \
                                  -figlet:template templates/figlet.html -figlet:tcp execd:4000 \
-                                 -notfound:template templates/notfound.html -notfound:dir notfound-img
+                                 -notfound:template templates/notfound.html -notfound:dir notfound-img \
+                                 -tools:template templates/tools.html -tools:source https://code.austinjadams.com/toolbag/tree/tools/
 
 [Install]
 WantedBy=multi-user.target

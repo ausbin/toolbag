@@ -17,23 +17,34 @@
 package toolbag
 
 import (
+	"flag"
 	"net/http"
 )
 
 type ToolBag struct {
 	Tools []Tool
 	*http.ServeMux
+	*flag.FlagSet
 }
 
 func NewToolBag(tools ...Tool) *ToolBag {
-	mux := http.NewServeMux()
+	tb := &ToolBag{tools, http.NewServeMux(),
+		// neither the program name nor choice of error handling for
+		// FlagSet.Parse() matters because we're collecting flags, not
+		// parsing them. so, pass some random (but valid) stuff
+		flag.NewFlagSet("toolbag", flag.PanicOnError)}
 
 	for _, tool := range tools {
-		tool.AddArgs()
-		mux.Handle(tool.Path(), tool)
+		tool.AddArgs(tb)
+		tb.ServeMux.Handle(tool.Path(), tool)
 	}
 
-	return &ToolBag{tools, mux}
+	// for now, just pass the args onto the global flag instance
+	tb.FlagSet.VisitAll(func(f *flag.Flag) {
+		flag.Var(f.Value, f.Name, f.Usage)
+	})
+
+	return tb
 }
 
 func (tb *ToolBag) Init() error {

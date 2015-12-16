@@ -26,7 +26,7 @@ type Tool interface {
 	Name() string
 	Desc() string
 	Path() string
-	AddArgs()
+	AddArgs(*ToolBag)
 	Init() error
 	http.Handler
 }
@@ -44,11 +44,11 @@ func NewToolFuncAt(name, desc, path string, f http.HandlerFunc) *ToolFunc {
 	return &ToolFunc{name, desc, path, f}
 }
 
-func (ft *ToolFunc) Name() string { return ft.name }
-func (ft *ToolFunc) Desc() string { return ft.desc }
-func (ft *ToolFunc) Path() string { return ft.path }
-func (ft *ToolFunc) AddArgs()     {}
-func (ft *ToolFunc) Init() error  { return nil }
+func (ft *ToolFunc) Name() string     { return ft.name }
+func (ft *ToolFunc) Desc() string     { return ft.desc }
+func (ft *ToolFunc) Path() string     { return ft.path }
+func (ft *ToolFunc) AddArgs(*ToolBag) {}
+func (ft *ToolFunc) Init() error      { return nil }
 
 // just a way to compose names of flags
 func Arg(t Tool, argname string) string {

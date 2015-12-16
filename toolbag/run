@@ -11,6 +11,7 @@ popd >/dev/null
 
 ./toolbag -http -tcp :8030 \
           -figlet:template share/templates/figlet.html -figlet:tcp 127.0.0.1:4000 \
-          -notfound:template share/templates/notfound.html -notfound:dir share/notfound-img
+          -notfound:template share/templates/notfound.html -notfound:dir share/notfound-img \
+          -tools:template share/templates/tools.html -tools:source https://code.austinjadams.com/toolbag/tree/tools/
 
 kill $pid

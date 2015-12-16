@@ -36,7 +36,7 @@ var (
 )
 
 func All() *tb.ToolBag {
-	return tb.NewToolBag(IP, Headers, NewFiglet(), NewNotFound())
+	return tb.NewToolBag(IP, Headers, NewFiglet(), NewNotFound(), NewTools())
 }
 
 // nasty hack to remove port numbers and the brackets from ipv6 addresses

@@ -18,7 +18,6 @@ package tools
 
 import (
 	"errors"
-	"flag"
 	"html/template"
 	"io/ioutil"
 	"math/rand"
@@ -48,14 +47,14 @@ func NewNotFound() *NotFound {
 }
 
 func (nf *NotFound) Name() string { return "notfound" }
-func (nf *NotFound) Desc() string { return "not found page showing a random math problem" }
+func (nf *NotFound) Desc() string { return "show a random math problem" }
 
 // be a catch-all
 func (nf *NotFound) Path() string { return "/" }
 
-func (nf *NotFound) AddArgs() {
-	flag.StringVar(&nf.args.dir, tb.Arg(nf, "dir"), "", "directory with the math problems")
-	flag.StringVar(&nf.args.template, tb.Arg(nf, "template"), "", "path to template")
+func (nf *NotFound) AddArgs(toolbag *tb.ToolBag) {
+	toolbag.StringVar(&nf.args.dir, tb.Arg(nf, "dir"), "", "directory with the math problems")
+	toolbag.StringVar(&nf.args.template, tb.Arg(nf, "template"), "", "path to template")
 }
 
 func (nf *NotFound) Init() error {

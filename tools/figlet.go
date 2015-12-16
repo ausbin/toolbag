@@ -18,7 +18,6 @@ package tools
 
 import (
 	"errors"
-	"flag"
 	"html/template"
 	"net/http"
 	"strings"
@@ -45,10 +44,10 @@ func NewFiglet() *Figlet {
 func (f *Figlet) Name() string { return "figlet" }
 func (f *Figlet) Desc() string { return "a web frontend to figlet" }
 func (f *Figlet) Path() string { return "/" + f.Name() }
-func (f *Figlet) AddArgs() {
-	flag.StringVar(&f.args.template, tb.Arg(f, "template"), "", "path to template")
-	flag.StringVar(&f.args.unix, tb.Arg(f, "unix"), "", "path to unix socket to execd")
-	flag.StringVar(&f.args.tcp, tb.Arg(f, "tcp"), "", "tcp address to execd")
+func (f *Figlet) AddArgs(toolbag *tb.ToolBag) {
+	toolbag.StringVar(&f.args.template, tb.Arg(f, "template"), "", "path to template")
+	toolbag.StringVar(&f.args.unix, tb.Arg(f, "unix"), "", "path to unix socket to execd")
+	toolbag.StringVar(&f.args.tcp, tb.Arg(f, "tcp"), "", "tcp address to execd")
 }
 
 func (f *Figlet) makeClient() (*execd.Client, error) {
