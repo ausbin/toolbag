@@ -39,8 +39,6 @@ func NewTools() *Tools {
 
 func (t *Tools) Name() string { return "tools" }
 func (t *Tools) Desc() string { return "list tools" }
-
-// be a catch-all
 func (t *Tools) Path() string { return "/" + t.Name() }
 
 func (t *Tools) AddArgs(toolbag *tb.ToolBag) {
