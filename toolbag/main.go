@@ -33,11 +33,12 @@ func usage(msg string) {
 	os.Exit(1)
 }
 
-func args(usefcgi, usehttp *bool, unix, tcp *string) {
+func args(usefcgi, usehttp *bool, unix, tcp, prefix *string) {
 	flag.BoolVar(usefcgi, "fcgi", false, "use fastcgi")
 	flag.BoolVar(usehttp, "http", false, "use http")
 	flag.StringVar(unix, "unix", "", "path to a unix socket")
 	flag.StringVar(tcp, "tcp", "", "path to a unix socket")
+	flag.StringVar(prefix, "prefix", "", "prefix to strip from paths")
 	flag.Parse()
 
 	// xnor
@@ -69,8 +70,8 @@ func main() {
 
 	// args
 	var usefcgi, usehttp bool
-	var unix, tcp string
-	args(&usefcgi, &usehttp, &unix, &tcp)
+	var unix, tcp, prefix string
+	args(&usefcgi, &usehttp, &unix, &tcp, &prefix)
 
 	if err := tb.Init(); err != nil {
 		usage(err.Error())
@@ -91,7 +92,15 @@ func main() {
 		serve = fcgi.Serve
 	}
 
-	if err := serve(sock, tb); err != nil {
+	var handler http.Handler
+	if prefix == "" {
+		handler = tb
+	} else {
+		handler = http.StripPrefix(prefix, tb)
+	}
+
+
+	if err := serve(sock, handler); err != nil {
 		log.Fatalln("can't serve", err)
 	}
 }
