@@ -26,13 +26,16 @@ import (
 	tb "code.austinjadams.com/toolbag"
 )
 
+// by default, limit request bodies to 4KiB (2^12 bytes)
+const defaultMaxReqBody int64 = 1 << 12
+
 type Figlet struct {
 	defaultFont string
 	fonts       map[string][]string
 	templ       *template.Template
 	net, addr   string
-
-	args struct {
+	args        struct {
+		maxReqBody          int64
 		template, unix, tcp string
 	}
 }
@@ -48,6 +51,7 @@ func (f *Figlet) AddArgs(toolbag *tb.ToolBag) {
 	toolbag.StringVar(&f.args.template, tb.Arg(f, "template"), "", "path to template")
 	toolbag.StringVar(&f.args.unix, tb.Arg(f, "unix"), "", "path to unix socket to execd")
 	toolbag.StringVar(&f.args.tcp, tb.Arg(f, "tcp"), "", "tcp address to execd")
+	toolbag.Int64Var(&f.args.maxReqBody, tb.Arg(f, "maxReqBody"), defaultMaxReqBody, "maximum size of a request body in bytes")
 }
 
 func (f *Figlet) makeClient() (*execd.Client, error) {
@@ -66,7 +70,7 @@ func (f *Figlet) fontCategory(needle string) string {
 	return ""
 }
 
-func (f *Figlet) Init() error {
+func (f *Figlet) parseArgs() error {
 	if f.args.template == "" {
 		return errors.New("missing template arg")
 	}
@@ -88,10 +92,10 @@ func (f *Figlet) Init() error {
 		f.addr = f.args.tcp
 	}
 
-	client, err := f.makeClient()
-	if err != nil {
-		return err
-	}
+	return nil
+}
+
+func (f *Figlet) findDefaultFont(client *execd.Client) error {
 	// find default font
 	defaultFont, err := client.ExecString("", "fig", "default")
 	if err != nil {
@@ -99,6 +103,10 @@ func (f *Figlet) Init() error {
 	}
 	f.defaultFont = strings.TrimSpace(defaultFont)
 
+	return nil
+}
+
+func (f *Figlet) findFonts(client *execd.Client) error {
 	// find categories of fonts
 	output, err := client.ExecString("", "fig", "ls")
 	if err != nil {
@@ -121,8 +129,36 @@ func (f *Figlet) Init() error {
 	return nil
 }
 
+func (f *Figlet) Init() error {
+	err := f.parseArgs()
+
+	client, err := f.makeClient()
+	if err != nil {
+		return err
+	}
+
+	err = f.findDefaultFont(client)
+	if err != nil {
+		return err
+	}
+
+	err = f.findFonts(client)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // serve
 func (f *Figlet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, f.args.maxReqBody)
+	err := r.ParseForm()
+	if err != nil {
+		tb.Whine(f, w, err)
+		return
+	}
+
 	font := r.PostFormValue("font")
 	text := r.PostFormValue("text")
 	result := ""
@@ -153,7 +189,7 @@ func (f *Figlet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := f.templ.Execute(w, &struct {
+	err = f.templ.Execute(w, &struct {
 		Font         string
 		Fonts        map[string][]string
 		Text, Result string
