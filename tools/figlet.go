@@ -131,6 +131,9 @@ func (f *Figlet) findFonts(client *execd.Client) error {
 
 func (f *Figlet) Init() error {
 	err := f.parseArgs()
+	if err != nil {
+		return err
+	}
 
 	client, err := f.makeClient()
 	if err != nil {
