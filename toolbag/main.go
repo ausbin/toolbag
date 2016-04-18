@@ -99,7 +99,6 @@ func main() {
 		handler = http.StripPrefix(prefix, tb)
 	}
 
-
 	if err := serve(sock, handler); err != nil {
 		log.Fatalln("can't serve", err)
 	}
